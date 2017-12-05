@@ -1,0 +1,133 @@
+"""
+Author: Sevki Bekir
+https://www.github.com/SevkiBekir
+-------
+This is ownCloud default application generator.
+To use:
+- Run this code:
+python oceng -a "Application Name" -p "ownCloud Path"
+
+Ex:
+python oceng -a "First SBK App" -p "/var/www/owncloud"
+"""
+
+#!/usr/bin/python
+
+import argparse
+import errno
+import os
+
+parser = argparse.ArgumentParser(description='oCeng Program')
+parser.add_argument("-a", "-appName", required=True, help="application name")
+parser.add_argument("-p", "-pathName",required=True,help="owncloud path Ex: /var/www/owncloud")
+parser.add_argument("-n", "-namespace", help="application's namespace", default="")
+args = parser.parse_args()
+print(args)
+
+appName = args.a
+namespace = args.n
+applicationName = args.a
+ownCloudPath = args.p
+
+if ' ' in appName:
+    data = appName.split(' ')
+    appName = ""
+    size = len(data)
+    for i in range(size):
+        appName = appName + data[i]
+
+
+appName = appName.lower()
+
+if namespace == '':
+    namespace = appName
+
+appinfoPath = ownCloudPath + "/apps/" + appName + "/appinfo/"
+lib = ownCloudPath + "/apps/" + appName + "/lib/Controller/"
+
+filePath = [appinfoPath + "app.php", lib + "da.pgp"]
+
+
+def createInfoXml():
+    sample = open("sample/info.xml", "r")
+    file = open(appinfoPath + "info.xml", "w")
+    for line in sample:
+        if "appName" in line:
+            data = line.split("appName")
+            line = data[0] + appName + data[1]
+        if "applicationName" in line:
+            data = line.split("applicationName")
+            line = data[0] + applicationName + data[1]
+        elif "nameSpace" in line:
+            data = line.split("nameSpace")
+            line = data[0] + namespace + data[1]
+        file.write(line)
+    sample.close()
+    file.close()
+
+def createAppPhp():
+    sample = open("sample/app.php", "r")
+    file = open(appinfoPath + "app.php", "w")
+    for line in sample:
+        if "appName" in line:
+            data = line.split("appName")
+            line = data[0] + appName + data[1]
+        file.write(line)
+    sample.close()
+    file.close()
+
+def createPageController():
+    sample = open("sample/PageController.php", "r")
+    file = open(lib + "PageController.php", "w")
+    for line in sample:
+        if "nameSpace" in line:
+            data = line.split("nameSpace")
+            line = data[0] + namespace + data[1]
+        file.write(line)
+    sample.close()
+    file.close()
+
+def createRoutePhp():
+    sample = open("sample/routes.php", "r")
+    file = open(appinfoPath + "routes.php", "w")
+    for line in sample:
+        if "nameSpace" in line:
+            data = line.split("nameSpace")
+            line = data[0] + namespace + data[1]
+        file.write(line)
+    sample.close()
+    file.close()
+
+def createApplicationPhp():
+    sample = open("sample/application.php", "r")
+    file = open(appinfoPath + "application.php", "w")
+    for line in sample:
+        if "appName" in line:
+            data = line.split("appName")
+            line = data[0] + appName + data[1]
+        elif "nameSpace" in line:
+            data = line.split("nameSpace")
+            line = data[0] + namespace + data[1]
+        file.write(line)
+    sample.close()
+    file.close()
+
+try:
+    size = len(filePath)
+    for i in range(size):
+        directory = os.path.dirname(filePath[i])
+        os.makedirs(directory)
+
+    createInfoXml()
+    createAppPhp()
+    createPageController()
+    createRoutePhp()
+    createApplicationPhp()
+
+
+except OSError as e:
+    if e.errno != errno.EEXIST:
+        raise
+
+
+
